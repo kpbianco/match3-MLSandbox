@@ -86,9 +86,67 @@ class falling_board:
     and check if there are adjacents that are 3+ for a match
     and delete them as needs
     '''
+    board_array = []
 
     def __init__(self):
-        pass
+        self.board_array = [0] * 162
+
+        for i in range(len(self.board_array)):
+            self.board_array[i] = random.randint(1, 6)
+
+    def check_if_match_horizontal(self, lowest):
+        #  The max index that needs to be checked is 117 out of the 162, no error there
+        if self.board_array[lowest] == self.board_array[lowest + 18] == self.board_array[lowest + 36] == self.board_array[lowest + 54] == self.board_array[lowest + 72] == self.board_array[lowest + 90] == self.board_array[lowest + 108] == self.board_array[lowest + 126] == self.board_array[lowest + 144]:
+            return 9
+        elif self.board_array[lowest] == self.board_array[lowest + 18] == self.board_array[lowest + 36] == self.board_array[lowest + 54] == self.board_array[lowest + 72] == self.board_array[lowest + 90] == self.board_array[lowest + 108] == self.board_array[lowest + 126]:
+            return 8
+        elif self.board_array[lowest] == self.board_array[lowest + 18] == self.board_array[lowest + 36] == self.board_array[lowest + 54] == self.board_array[lowest + 72] == self.board_array[lowest + 90] == self.board_array[lowest + 108]:
+            return 7
+        elif self.board_array[lowest] == self.board_array[lowest + 18] == self.board_array[lowest + 36] == self.board_array[lowest + 54] == self.board_array[lowest + 72] == self.board_array[lowest + 90]:
+            return 6
+        elif self.board_array[lowest] == self.board_array[lowest + 18] == self.board_array[lowest + 36] == self.board_array[lowest + 54] == self.board_array[lowest + 72]:
+            return 5
+        elif self.board_array[lowest] == self.board_array[lowest + 18] == self.board_array[lowest + 36] == self.board_array[lowest + 54]:
+            return 4
+        elif self.board_array[lowest] == self.board_array[lowest + 18] == self.board_array[lowest + 36]:
+            return 3
+        else:
+            return -1
+
+    def check_if_match_vertical(self, lowest):
+        if self.board_array[lowest] == self.board_array[lowest + 1] == self.board_array[lowest + 2] == self.board_array[lowest + 3] == self.board_array[lowest + 4] == self.board_array[lowest + 5] == self.board_array[lowest + 6] == self.board_array[lowest + 7] == self.board_array[lowest + 8]:
+            return 9
+        elif self.board_array[lowest] == self.board_array[lowest + 1] == self.board_array[lowest + 2] == self.board_array[lowest + 3] == self.board_array[lowest + 4] == self.board_array[lowest + 5] == self.board_array[lowest + 6] == self.board_array[lowest + 7]:
+            return 8
+        elif self.board_array[lowest] == self.board_array[lowest + 1] == self.board_array[lowest + 2] == self.board_array[lowest + 3] == self.board_array[lowest + 4] == self.board_array[lowest + 5] == self.board_array[lowest + 6]:
+            return 7
+        elif self.board_array[lowest] == self.board_array[lowest + 1] == self.board_array[lowest + 2] == self.board_array[lowest + 3] == self.board_array[lowest + 4] == self.board_array[lowest + 5]:
+            return 6
+        elif self.board_array[lowest] == self.board_array[lowest + 1] == self.board_array[lowest + 2] == self.board_array[lowest + 3] == self.board_array[lowest + 4]:
+            return 5
+        elif self.board_array[lowest] == self.board_array[lowest + 1] == self.board_array[lowest + 2] == self.board_array[lowest + 3]:
+            return 4
+        elif self.board_array[lowest] == self.board_array[lowest + 1] == self.board_array[lowest + 2]:
+            return 3
+        else:
+            return -1
+
+    def delete_match(self, lowest, length):
+        if length == -1:
+            return  # implement gem going back to original position and adding score
+
+        for i in length:
+            self.board_array[i] = 0  # implement adding score and multiplier after
+
+    def shift_down(self, h_or_v, lowest):
+        if h_or_v is 'h':
+            # figure out how to find the top of the resevoir so we can set that as new random value and move everything down
+            for i in range(18):
+                self.board_array[lowest + i] = self.board_array[lowest + (i + 1)]
+            self.board_array[162 - lowest]
+
+        if h_or_v is 'v':
+            pass
 
 
 class gems:
