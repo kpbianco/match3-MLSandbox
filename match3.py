@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-#
-# Kian's ML Match 3 Playground
-# A simple match three game that enables a reinforcement learning model for practice
-# github link
-#
-# Released under the GNU General Public License
+'''
+Kian's ML Match 3 Playground
+A simple match three game that enables a reinforcement learning model for demo
 
-VERSION = "0.0"
+https://github.com/kpbianco/match3-MLSandbox
+Released under the GNU General Public License
+'''
+
+VERSION = "0.1"
 
 try:
     import sys
@@ -18,14 +18,14 @@ try:
     from socket import*
     from pygame.locals import *
 
+
+# Says which module couldn't load properly if there is one
 except ImportError as err:
-    print(f"couldn't load module {0}".format(err))
+    print(f"couldn't load module {err}".format(err))
     sys.exit(2)
 
 
 #  Resources
-
-
 class images:
 
     def load_png(name):
@@ -35,9 +35,6 @@ class images:
 
             if image.get_alpha() is None:
                 image = image.convert()
-
-            else:
-                image = image.convert_alpha()
 
         except pygame.error as message:
             print('Cannot load image:' + fullname)
@@ -68,8 +65,7 @@ class sounds:
 
 
 #  Game Objects
-
-
+# This is probably not needed
 class cursor:
     '''
     game cursor for interaction
@@ -81,10 +77,9 @@ class cursor:
 
 class falling_board:
     '''
-    Create new stack array of 3x3 size full of gems where
-    the gems automatically fall from the top to fill spaces
-    and check if there are adjacents that are 3+ for a match
-    and delete them as needs
+    A 9x9 array storing the gems, with a 81 gem buffer above the other 81 sized
+    board, it includes checking matches, and shifting the matches down after
+    success
     '''
     board_array = []
 
@@ -139,14 +134,29 @@ class falling_board:
             self.board_array[i] = 0  # implement adding score and multiplier after
 
     def shift_down(self, h_or_v, lowest):
-        if h_or_v is 'h':
-            # figure out how to find the top of the resevoir so we can set that as new random value and move everything down
-            for i in range(18):
-                self.board_array[lowest + i] = self.board_array[lowest + (i + 1)]
-            self.board_array[162 - lowest]
+        if h_or_v == 'h':
+            next_val = self.board_array[lowest]
+            while next_val == 0:
+                for i in range(18 - (lowest % 18)):
+                    try:
+                        self.board_array[lowest] == self.board_array[(lowest + i)]
+                        lowest += 1
+                    except IndexError:
+                        self.board_array[i] = random.randint(1, 6)
+                next_val += 16
+                lowest = next_val
 
-        if h_or_v is 'v':
-            pass
+        if h_or_v == 'v':
+            next_val = self.board_array[lowest]
+            while next_val == 0:
+                self.board_array[lowest] == self.board_array[(lowest + 1)]
+                lowest += 1
+            for i in range(18 - (lowest % 18)):
+                try:
+                    self.board_array[lowest] == self.board_array[(lowest + i)]
+                    lowest += 1
+                except IndexError:
+                    self.board_array[i] = random.randint(1, 6)
 
 
 class gems:
@@ -164,55 +174,26 @@ class gems:
         self.area = screen.get_rect()
         self.vector = vector
 
+    def horizontal_swap(self):
+        # use click drag from mouse/cursor to execute
+        # change to failed_swap if unsuccessful
+        pass
+
+    def vertical_swap(self):
+        # ""
+        pass
+
+    def failed_swap(self):
+        # basic rebound effect visually
+        pass
+
     def update(self):
+        # blip the swaps
         newpos = self.calcnewpos(self.rect, self.vector)
         self.rect = newpos
         (angle, z) = self.vector
 
-        # Collisions to change for my implementation
-        '''
-        if not self.area.contains(newpos):
-            tl = not self.area.collidepoint(newpos.topleft)
-            tr = not self.area.collidepoint(newpos.topright)
-            bl = not self.area.collidepoint(newpos.bottomleft)
-            br = not self.area.collidepoint(newpos.bottomright)
-            if tr and tl or (br and bl):
-                angle = -angle
-            if tl and bl:
-                # self.offcourt()
-                angle = math.pi - angle
-            if tr and br:
-                angle = math.pi - angle
-                # self.offcourt()
-        else:
-            # Deflate the rectangles so you can't catch a ball behind the bat
-            player1.rect.inflate(-3, -3)
-            player2.rect.inflate(-3, -3)
 
-            # Do ball and bat collide?
-            # Note I put in an odd rule that sets self.hit to 1 when they collide, and unsets it in the next
-            # iteration. this is to stop odd ball behaviour where it finds a collision *inside* the
-            # bat, the ball reverses, and is still inside the bat, so bounces around inside.
-            # This way, the ball can always escape and bounce away cleanly
-            if self.rect.colliderect(player1.rect) == 1 and not self.hit:
-                angle = math.pi - angle
-                self.hit = not self.hit
-            elif self.rect.colliderect(player2.rect) == 1 and not self.hit:
-                angle = math.pi - angle
-                self.hit = not self.hit
-            elif self.hit:
-                self.hit = not self.hit
-        self.vector = (angle,z)
-        '''
-
-    #  Use my own method for moving this is for hitting
-    def calcnewpos(self, rect, vector):
-        (angle, z) = vector
-        (dx, dy) = (z * math.con(angle), z * math.sin(angle))
-        return rect.move(dx, dy)
-
-
-#  Double check if this needs to be a class or a function or just a component
 class multiplier:
     '''
     Keep track of the current multiplier and keep it as an updating variable
@@ -220,7 +201,24 @@ class multiplier:
     '''
 
     def __init__(self):
-        pass
+        self.score_multiplier = 1.0
+        self.tmp = 0
+
+    def increase_mult(self):
+        self.score_multiplier += 0.1
+
+    def decrease_mult(self):
+        self.score_multiplier -= 0.1
+
+    def big_mult(self, value):
+        self.tmp = self.score_multiplier
+        self.score_multiplier *= value
+
+    def revert_mult(self):
+        self.score_multiplier = self.tmp
+
+    def reset_mult(self):
+        self.score_multiplier = 1.0
 
 
 class menu:
@@ -229,15 +227,15 @@ class menu:
     seperate from the falling board, that counts the matches, with a given
     multiplier, housing the score and the timer
     '''
+    # Do this after all logic is finished and I learn to blip
 
     def __init__(self):
         pass
 
 
 #  Game Functions
-
-
 def scoreboard():
+    # Could make this class
     '''
     Shows the current game score, multiplier, and game score in menu class area
     '''
@@ -245,6 +243,7 @@ def scoreboard():
 
 
 def timer():
+    # Could make this class
     '''
     Continous timer that shows remaining time left
     '''
@@ -252,6 +251,7 @@ def timer():
 
 
 def menu_content():
+    # idk
     '''
     Select try again, quit etc...
     '''
@@ -259,17 +259,15 @@ def menu_content():
 
 
 #  Initialize game here
-
-
 def main():
     '''
     Initialize game, create objects for classes, check for user input, update..
     '''
-
+# ---------------------------------------- Hello there thing
     # Initialise screen
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
-    pygame.display.set_caption('Basic Pygame program')
+    pygame.display.set_caption('Hedge Match Three')
 
     # Fill background
     background = pygame.Surface(screen.get_size())
@@ -286,6 +284,7 @@ def main():
     # Blit everything to the screen
     screen.blit(background, (0, 0))
     pygame.display.flip()
+# -----------------------------------------------
 
     # Event loop
     while 1:
