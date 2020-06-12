@@ -6,7 +6,7 @@ https://github.com/kpbianco/match3-MLSandbox
 Released under the GNU General Public License
 '''
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 try:
     import sys
@@ -65,16 +65,6 @@ class sounds:
 
 
 #  Game Objects
-# This is probably not needed
-class cursor:
-    '''
-    game cursor for interaction
-    '''
-
-    def __init__(self):
-        pass
-
-
 class falling_board:
     '''
     A 9x9 array storing the gems, with a 81 gem buffer above the other 81 sized
@@ -126,12 +116,71 @@ class falling_board:
         else:
             return -1
 
-    def delete_match(self, lowest, length):
+    def delete_match(self, h_or_v, lowest, length):
         if length == -1:
             return  # implement gem going back to original position and adding score
 
-        for i in length:
-            self.board_array[i] = 0  # implement adding score and multiplier after
+        if h_or_v == 'h':
+            for i in length:
+                self.board_array[lowest + (i * 16)] = 0
+            if length == 3:
+                multiplier.increase_mult()
+                # add score
+            if length == 4:
+                multiplier.big_mult(2)
+                # add score
+                multiplier.revert_mult()
+            if length == 5:
+                multiplier.big_mult(5)
+                # add score
+                multiplier.revert_mult()
+            if length == 6:
+                multiplier.big_mult(10)
+                # add score
+                multiplier.revert_mult()
+            if length == 7:
+                multiplier.big_mult(15)
+                # add score
+                multiplier.revert_mult()
+            if length == 8:
+                multiplier.big_mult(25)
+                # add score
+                multiplier.revert_mult()
+            if length == 9:
+                multiplier.big_mult(50)
+                # add score
+                multiplier.revert_mult()
+
+        if h_or_v == 'v':
+            for i in length:
+                self.board_array[lowest + i] = 0  # implement adding score and multiplier after
+            if length == 3:
+                multiplier.increase_mult()
+                # add score
+            if length == 4:
+                multiplier.big_mult(2)
+                # add score
+                multiplier.revert_mult()
+            if length == 5:
+                multiplier.big_mult(5)
+                # add score
+                multiplier.revert_mult()
+            if length == 6:
+                multiplier.big_mult(10)
+                # add score
+                multiplier.revert_mult()
+            if length == 7:
+                multiplier.big_mult(15)
+                # add score
+                multiplier.revert_mult()
+            if length == 8:
+                multiplier.big_mult(25)
+                # add score
+                multiplier.revert_mult()
+            if length == 9:
+                multiplier.big_mult(50)
+                # add score
+                multiplier.revert_mult()
 
     def shift_down(self, h_or_v, lowest):
         if h_or_v == 'h':
@@ -175,13 +224,35 @@ class gems:
         self.vector = vector
 
     def horizontal_swap(self):
-        # use click drag from mouse/cursor to execute
-        # change to failed_swap if unsuccessful
-        pass
+        mouse = pygame.mouse
+
+        if mouse.get_pressed():
+            if mouse.get_rel(-10, 0) or mouse.get_rel(10, 0):
+                # gem at start mouse position switches to the Left or right
+                if check_if_match_vertical() is not -1:
+                    length = check_if_match_vertical()
+                    falling_board.delete_match('v', find a way to determine lowest based off of the swapped direction, length )
+                    falling_board.shift_down('v', use lowest from above)
+                if check_if_match_horizontal() is not -1:
+                    length = check_if_match_horizontal()
+                    falling_board.delete_match('h', find a way to determine lowest based off of the swapped direction, length )
+                    falling_board.shift_down('h', use lowest from above)
+                else:
+                    self.failed_swap()
 
     def vertical_swap(self):
-        # ""
-        pass
+        if mouse.get_rel(0, -10) or mouse.get_rel(0, 10):
+            # gem at start mouse position switches to the Left or right
+            if check_if_match_vertical() is not -1:
+                length = check_if_match_vertical()
+                falling_board.delete_match('v', find a way to determine lowest based off of the swapped direction, length)
+                falling_board.shift_down('v', use lowest from above)
+            if check_if_match_horizontal() is not -1:
+                length = check_if_match_horizontal()
+                falling_board.delete_match('h', find a way to determine lowest based off of the swapped direction, length)
+                falling_board.shift_down('h', use lowest from above)
+            else:
+                self.failed_swap()
 
     def failed_swap(self):
         # basic rebound effect visually
@@ -233,11 +304,20 @@ class menu:
         pass
 
 
+class clock:
+    '''
+    Keeps track of current time and fps related things
+    '''
+
+    def __init__(self):
+        self.clock = pygame.time.Clock
+
+
 #  Game Functions
 def scoreboard():
     # Could make this class
     '''
-    Shows the current game score, multiplier, and game score in menu class area
+    Shows the current game score, time, multiplier, and game score in menu class area
     '''
     pass
 
@@ -247,7 +327,9 @@ def timer():
     '''
     Continous timer that shows remaining time left
     '''
-    pass
+    timer = pygame.time
+    # define what endgame is
+    timer.set_timer(endgame, 90000)
 
 
 def menu_content():
